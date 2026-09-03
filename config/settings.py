@@ -28,7 +28,11 @@ ROOT_URLCONF='config.urls'; WSGI_APPLICATION='config.wsgi.application'; ASGI_APP
 DATABASES={'default':{'ENGINE':'django.db.backends.postgresql','NAME':os.getenv('DB_NAME','elevate'),'USER':os.getenv('DB_USER','postgres'),'PASSWORD':os.getenv('DB_PASSWORD','postgres'),'HOST':os.getenv('DB_HOST','127.0.0.1'),'PORT':os.getenv('DB_PORT','5432')}}
 AUTH_USER_MODEL='accounts.User'
 REST_FRAMEWORK={'DEFAULT_AUTHENTICATION_CLASSES':('rest_framework_simplejwt.authentication.JWTAuthentication',),'DEFAULT_PERMISSION_CLASSES':('rest_framework.permissions.IsAuthenticated',)}
-SIMPLE_JWT={'ACCESS_TOKEN_LIFETIME':timedelta(minutes=60),'REFRESH_TOKEN_LIFETIME':timedelta(days=30),'AUTH_HEADER_TYPES':('Bearer',)}
+SIMPLE_JWT={
+    'ACCESS_TOKEN_LIFETIME':timedelta(days=365),
+    'REFRESH_TOKEN_LIFETIME':timedelta(days=30),
+    'AUTH_HEADER_TYPES':('Bearer',)
+    }
 CORS_ALLOW_ALL_ORIGINS=True
 LANGUAGE_CODE='en-us'; TIME_ZONE='Asia/Karachi'; USE_I18N=True; USE_TZ=True
 STATIC_URL='static/'; MEDIA_URL='/media/'; MEDIA_ROOT=BASE_DIR/'media'; DEFAULT_AUTO_FIELD='django.db.models.BigAutoField'
@@ -142,3 +146,5 @@ JAZZMIN_UI_TWEAKS = {
         "danger": "btn-danger",
     },
 }
+
+# gr-l6)$i6xq-c3n%rn$$ie9g7#3vjpsd#lg^-=e1bmct+w!z39
