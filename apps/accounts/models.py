@@ -1,7 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 class User(AbstractUser):
- class Roles(models.TextChoices): CUSTOMER='CUSTOMER','Customer'; ADMIN='ADMIN','Admin'
+ class Roles(models.TextChoices): CUSTOMER='CUSTOMER','Customer'; STAFF = 'STAFF', 'Staff';ADMIN='ADMIN','Admin'
  email=models.EmailField(blank=True);
  phone=models.CharField(max_length=30,blank=True); 
  
