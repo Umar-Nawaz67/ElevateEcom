@@ -1,9 +1,13 @@
+from django.contrib.auth import get_user_model
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.orders.serializers import OrderSerializer
-from .models import Order, User  # Import your User model
+
+from .models import Order
+
+User = get_user_model()
 
 
 class OrderViewSet(viewsets.ModelViewSet):
@@ -13,14 +17,12 @@ class OrderViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
 
-        # Allow STAFF and ADMIN roles to access all orders
         if user.role in [User.Roles.STAFF, User.Roles.ADMIN]:
             return Order.objects.select_related("package", "customer")
 
         return Order.objects.filter(customer=user)
 
     def partial_update(self, request, *args, **kwargs):
-        # Restrict status changes to STAFF and ADMIN
         if request.user.role not in [User.Roles.STAFF, User.Roles.ADMIN]:
             return Response({"detail": "Staff only"}, status=403)
 
