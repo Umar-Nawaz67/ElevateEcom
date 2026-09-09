@@ -10,3 +10,15 @@ class Service(models.Model):
  class Meta:
         ordering = ["sort_order", "name"]
  def __str__(self): return self.name
+class PromotionImage(models.Model):
+    title = models.CharField(max_length=255, blank=True)
+    image = models.ImageField(upload_to="promotions/")
+    link_url = models.URLField(blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title or f"Promotion #{self.id}"

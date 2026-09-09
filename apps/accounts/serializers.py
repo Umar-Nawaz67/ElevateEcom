@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import User
+from rest_framework import serializers
 class RegisterSerializer(serializers.ModelSerializer):
  password=serializers.CharField(write_only=True,min_length=8)
  class Meta: model=User; fields=('id','username','email','phone','password','first_name','last_name')
@@ -10,6 +11,11 @@ class FirebaseAuthSerializer(serializers.Serializer):
     id_token = serializers.CharField(
         required=True
     )
+
+
+class FirebaseAuthSerializer(serializers.Serializer):
+    id_token = serializers.CharField(required=True)
+    device_token = serializers.CharField(required=False, allow_blank=True, allow_null=True)    
 class CompleteRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:

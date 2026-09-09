@@ -4,7 +4,12 @@ class User(AbstractUser):
  class Roles(models.TextChoices): CUSTOMER='CUSTOMER','Customer'; STAFF = 'STAFF', 'Staff';ADMIN='ADMIN','Admin'
  email=models.EmailField(blank=True);
  phone=models.CharField(max_length=30,blank=True); 
- 
+ device_token = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text="FCM/APNS Push Notification Device Token"
+    )
  role=models.CharField(max_length=20,choices=Roles.choices,default=Roles.CUSTOMER)
  firebase_uid = models.CharField(
          max_length=255,

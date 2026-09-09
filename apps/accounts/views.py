@@ -56,7 +56,6 @@ User = get_user_model()
 
 
 class FirebaseAuthView(APIView):
-
     permission_classes = [AllowAny]
 
     @transaction.atomic
@@ -66,15 +65,11 @@ class FirebaseAuthView(APIView):
         # 1. Validate request
         # ---------------------------------------------------------
 
-        serializer = FirebaseAuthSerializer(
-            data=request.data
-        )
-
-        serializer.is_valid(
-            raise_exception=True
-        )
+        serializer = FirebaseAuthSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
         id_token = serializer.validated_data["id_token"]
+        device_token = serializer.validated_data.get("device_token")  # Extract device_token
 
         # ---------------------------------------------------------
         # 2. Verify Firebase ID token
@@ -98,23 +93,10 @@ class FirebaseAuthView(APIView):
         firebase_uid = firebase_user.get("uid")
         email = firebase_user.get("email")
         phone = firebase_user.get("phone_number")
+        email_verified = firebase_user.get("email_verified", False)
+        firebase_data = firebase_user.get("firebase", {})
+        provider = firebase_data.get("sign_in_provider", "unknown")
 
-        email_verified = firebase_user.get(
-            "email_verified",
-            False
-        )
-
-        firebase_data = firebase_user.get(
-            "firebase",
-            {}
-        )
-
-        provider = firebase_data.get(
-            "sign_in_provider",
-            "unknown"
-        )
-
-        # Normalize email
         if email:
             email = email.strip().lower()
 
@@ -135,15 +117,11 @@ class FirebaseAuthView(APIView):
         # 4. FIRST: Find by Firebase UID
         # ---------------------------------------------------------
 
-        user = User.objects.filter(
-            firebase_uid=firebase_uid
-        ).first()
-
+        user = User.objects.filter(firebase_uid=firebase_uid).first()
         is_new_user = False
         matched_by = None
 
         if user:
-
             matched_by = "firebase_uid"
 
         # ---------------------------------------------------------
@@ -151,24 +129,12 @@ class FirebaseAuthView(APIView):
         # ---------------------------------------------------------
 
         if not user and email and email_verified:
-
-            user = User.objects.filter(
-                email__iexact=email
-            ).first()
+            user = User.objects.filter(email__iexact=email).first()
 
             if user:
-
                 matched_by = "email"
 
-                # -------------------------------------------------
-                # Existing account has another Firebase UID
-                # -------------------------------------------------
-
-                if (
-                    user.firebase_uid
-                    and user.firebase_uid != firebase_uid
-                ):
-
+                if user.firebase_uid and user.firebase_uid != firebase_uid:
                     return Response(
                         {
                             "success": False,
@@ -182,12 +148,7 @@ class FirebaseAuthView(APIView):
                         status=status.HTTP_409_CONFLICT,
                     )
 
-                # -------------------------------------------------
-                # Existing account has no Firebase UID
-                # -------------------------------------------------
-
                 if not user.firebase_uid:
-
                     user.firebase_uid = firebase_uid
 
         # ---------------------------------------------------------
@@ -195,32 +156,20 @@ class FirebaseAuthView(APIView):
         # ---------------------------------------------------------
 
         if not user:
-
             is_new_user = True
 
-            # Generate username
             if email:
                 username = email
             elif phone:
-                username = phone.replace(
-                    "+",
-                    ""
-                )
+                username = phone.replace("+", "")
             else:
                 username = f"firebase_{firebase_uid[:12]}"
 
-            # Make username unique
             original_username = username
             counter = 1
 
-            while User.objects.filter(
-                username=username
-            ).exists():
-
-                username = (
-                    f"{original_username}_{counter}"
-                )
-
+            while User.objects.filter(username=username).exists():
+                username = f"{original_username}_{counter}"
                 counter += 1
 
             user = User.objects.create_user(
@@ -231,6 +180,7 @@ class FirebaseAuthView(APIView):
                 firebase_provider=provider,
                 role="CUSTOMER",
                 registration_completed=False,
+                device_token=device_token,  # Saved on account creation
             )
 
             matched_by = "new_account"
@@ -249,20 +199,21 @@ class FirebaseAuthView(APIView):
             user.firebase_provider = provider
             changed_fields.append("firebase_provider")
 
-        # Don't overwrite an existing phone unnecessarily
         if phone and not user.phone:
             user.phone = phone
             changed_fields.append("phone")
 
-        # Don't overwrite existing email
         if email and not user.email:
             user.email = email
             changed_fields.append("email")
 
+        # Update device_token if provided and changed
+        if device_token and user.device_token != device_token:
+            user.device_token = device_token
+            changed_fields.append("device_token")
+
         if changed_fields:
-            user.save(
-                update_fields=changed_fields
-            )
+            user.save(update_fields=changed_fields)
 
         # ---------------------------------------------------------
         # 8. Generate Django JWT
@@ -277,25 +228,12 @@ class FirebaseAuthView(APIView):
         return Response(
             {
                 "success": True,
-
                 "is_new_user": is_new_user,
-
-                "registration_completed": (
-                    user.registration_completed
-                ),
-
-                "requires_registration": (
-                    not user.registration_completed
-                ),
-
+                "registration_completed": user.registration_completed,
+                "requires_registration": not user.registration_completed,
                 "matched_by": matched_by,
-
-                "access": str(
-                    refresh.access_token
-                ),
-
+                "access": str(refresh.access_token),
                 "refresh": str(refresh),
-
                 "user": {
                     "id": user.id,
                     "username": user.username,
@@ -306,14 +244,12 @@ class FirebaseAuthView(APIView):
                     "role": user.role,
                     "firebase_uid": user.firebase_uid,
                     "provider": user.firebase_provider,
-                    "registration_completed": (
-                        user.registration_completed
-                    ),
+                    "device_token": user.device_token,
+                    "registration_completed": user.registration_completed,
                 },
             },
             status=status.HTTP_200_OK,
         )
-
 class CompleteRegistrationView(APIView):
 
     permission_classes = [IsAuthenticated]

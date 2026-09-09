@@ -4,8 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.orders.serializers import OrderSerializer
-
 from .models import Order
+from .services import send_order_status_notification  # Import helper
 
 User = get_user_model()
 
@@ -41,4 +41,8 @@ class OrderViewSet(viewsets.ModelViewSet):
 
         o.status = new
         o.save(update_fields=["status", "updated_at"])
+
+        # Send FCM notification to the order's customer
+        send_order_status_notification(user=o.customer, order=o)
+
         return Response(self.get_serializer(o).data)
