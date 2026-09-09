@@ -35,6 +35,7 @@ class OrderViewSet(viewsets.ModelViewSet):
             "COMPLETED": [],
             "CANCELLED": [],
         }
+        send_order_status_notification(user=o.customer, order=o)
 
         if new not in allowed.get(o.status, []):
             return Response({"detail": "Invalid status transition"}, status=400)
