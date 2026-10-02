@@ -29,7 +29,7 @@ INSTALLED_APPS=[
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles','corsheaders','rest_framework','apps.accounts','apps.services','apps.packages','apps.orders','apps.notifications']
+    'django.contrib.staticfiles','corsheaders','rest_framework','apps.accounts','apps.services','apps.categories','apps.packages','apps.products','apps.orders','apps.notifications']
 MIDDLEWARE=['corsheaders.middleware.CorsMiddleware','django.middleware.security.SecurityMiddleware','django.contrib.sessions.middleware.SessionMiddleware','django.middleware.common.CommonMiddleware','django.middleware.csrf.CsrfViewMiddleware','django.contrib.auth.middleware.AuthenticationMiddleware','django.contrib.messages.middleware.MessageMiddleware']
 ROOT_URLCONF='config.urls'; WSGI_APPLICATION='config.wsgi.application'; ASGI_APPLICATION='config.asgi.application'
 DATABASES={'default':{'ENGINE':'django.db.backends.postgresql','NAME':os.getenv('DB_NAME','elevate'),'USER':os.getenv('DB_USER','postgres'),'PASSWORD':os.getenv('DB_PASSWORD','postgres'),'HOST':os.getenv('DB_HOST','127.0.0.1'),'PORT':os.getenv('DB_PORT','5432')}}
@@ -62,7 +62,9 @@ JAZZMIN_SETTINGS = {
     "search_model": [
         "accounts.User",
         "services.Service",
+        "categories.Category",
         "packages.Package",
+        "products.Product",
         "orders.Order",
     ],
 
@@ -70,7 +72,9 @@ JAZZMIN_SETTINGS = {
     "order_with_respect_to": [
         "orders",
         "services",
+        "categories",
         "packages",
+        "products",
         "accounts",
         "notifications",
         "auth",
@@ -84,8 +88,15 @@ JAZZMIN_SETTINGS = {
         "services": "fas fa-tools",
         "services.service": "fas fa-tools",
 
+        "categories": "fas fa-layer-group",
+        "categories.category": "fas fa-th-large",
+
         "packages": "fas fa-box-open",
         "packages.package": "fas fa-box",
+
+        "products": "fas fa-cube",
+        "products.product": "fas fa-cube",
+        "products.ingredient": "fas fa-carrot",
 
         "accounts": "fas fa-users",
         "accounts.user": "fas fa-user",

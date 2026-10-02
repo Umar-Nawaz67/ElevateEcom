@@ -1,23 +1,28 @@
-from django.db.models import Prefetch
 from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated,IsAdminUser
+
+from apps.services.permissions import StaffWriteMixin
+
 from .models import Package
 from .serializers import PackageSerializer
-from apps.services.models import Service
-from rest_framework.generics import ListAPIView
-from rest_framework.permissions import AllowAny
 
-from .serializers import ServiceWithPackagesSerializer
-class PackageViewSet(viewsets.ModelViewSet):
- serializer_class=PackageSerializer; permission_classes=[IsAuthenticated]
- def get_queryset(self): return Package.objects.select_related('service').filter(is_active=True) if not self.request.user.is_staff else Package.objects.select_related('service').all()
- def get_permissions(self): return [IsAuthenticated(),IsAdminUser()] if self.action in ['create','update','partial_update','destroy'] else [IsAuthenticated()]
-class ServicePackageListView(ListAPIView):
-    serializer_class = ServiceWithPackagesSerializer
-    permission_classes = [AllowAny]  # No authorization required
+
+class PackageViewSet(StaffWriteMixin, viewsets.ModelViewSet):
+    """Customers see active packages; staff see all. Filters: ?service=<id>&category=<id>"""
+
+    serializer_class = PackageSerializer
 
     def get_queryset(self):
-        # Fetch services along with only active packages (optional filter)
-        return Service.objects.prefetch_related(
-            Prefetch('packages', queryset=Package.objects.filter(is_active=True))
-        )
+        qs = Package.objects.select_related("service", "category")
+        if not self.request.user.is_staff:
+            qs = qs.filter(
+                is_active=True,
+                service__is_active=True,
+                category__is_active=True,
+            )
+        category = self.request.query_params.get("category")
+        if category:
+            qs = qs.filter(category_id=category)
+        service = self.request.query_params.get("service")
+        if service:
+            qs = qs.filter(service_id=service)
+        return qs

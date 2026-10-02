@@ -11,10 +11,10 @@ class PackageInline(admin.TabularInline):
 
     fields = (
         "name",
+        "category",
         "description",
-        "price",
-        "duration_minutes",
         "image",
+        "sort_order",
         "is_active",
     )
 

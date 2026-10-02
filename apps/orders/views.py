@@ -13,14 +13,15 @@ User = get_user_model()
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
+    http_method_names = ["get", "post", "patch", "head", "options"]
 
     def get_queryset(self):
         user = self.request.user
 
         if user.role in [User.Roles.STAFF, User.Roles.ADMIN]:
-            return Order.objects.select_related("package", "customer")
+            return Order.objects.select_related("customer").prefetch_related("items")
 
-        return Order.objects.filter(customer=user)
+        return Order.objects.filter(customer=user).prefetch_related("items")
 
     def partial_update(self, request, *args, **kwargs):
         if request.user.role not in [User.Roles.STAFF, User.Roles.ADMIN]:
@@ -35,7 +36,6 @@ class OrderViewSet(viewsets.ModelViewSet):
             "COMPLETED": [],
             "CANCELLED": [],
         }
-        send_order_status_notification(user=o.customer, order=o)
 
         if new not in allowed.get(o.status, []):
             return Response({"detail": "Invalid status transition"}, status=400)
