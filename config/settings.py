@@ -158,7 +158,8 @@ JAZZMIN_UI_TWEAKS = {
 from corsheaders.defaults import default_headers
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost",
+    "http://localhost:57099",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_HEADERS = [
