@@ -25,13 +25,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "product_name", "unit_price", "line_total", "removed_ingredients"]
 
     def validate_product(self, product):
-        pkg = product.package
-        if not (
-            product.is_active
-            and pkg.is_active
-            and pkg.service.is_active
-            and pkg.category.is_active
-        ):
+        if not (product.is_active and product.category.is_active):
             raise serializers.ValidationError(f'"{product.name}" is not available.')
         return product
 
