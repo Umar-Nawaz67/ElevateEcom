@@ -171,6 +171,7 @@ from corsheaders.defaults import default_headers
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:57099",
     "http://localhost:3000",
+    "https://nutrinestmobileapplication.vercel.app",
 ]
 
 CORS_ALLOW_HEADERS = [
