@@ -21,9 +21,11 @@ TEMPLATES = [
     },
 ]
 SECRET_KEY=os.getenv('SECRET_KEY','dev-key'); DEBUG=os.getenv('DEBUG','True')=='True'
-ALLOWED_HOSTS=[x for x in os.getenv('ALLOWED_HOSTS',
-                                    '.trycloudflare.com',
-                                    '127.0.0.1,localhost').split(',') if x]
+ALLOWED_HOSTS = [
+    x.strip()
+    for x in os.getenv('ALLOWED_HOSTS', '77.237.238.177,localhost,127.0.0.1,.trycloudflare.com').split(',')
+    if x.strip()
+]
 INSTALLED_APPS=[
     'jazzmin',
     'django.contrib.admin',
